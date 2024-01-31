@@ -1,11 +1,25 @@
 // Author: Javier Garcia
 import express from "express";
+import { db } from "../database.js";
 
 const router = express.Router();
 
 // Retrieve List of Books by Genre (http://localhost:3000/books/browse/by-genre?genre=mystery)
-router.get("/books/browse/by-genre", (req, res) => {
-    const genre = req.query.genre;
+router.get("/books/browse/by-genre", async (req, res) => {
+    try {
+        const genre = req.query.genre;
+
+        if (!genre) {
+            res.status(400).json({ error: "Genre parameter is missing in the request." });
+            return;
+        }
+
+        const books = await db.collection("books").find({ genre }).toArray();
+        res.status(200).json(books);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error. Please try again later." });
+    }
 });
 
 // Retrieve List of Top Sellers (http://localhost:3000/books/browse/top-sellers)
