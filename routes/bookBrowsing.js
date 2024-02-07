@@ -1,6 +1,6 @@
 // Author: Javier Garcia
 import express from "express";
-import { db } from "../database.js";
+import { db } from "../db.js";
 
 const router = express.Router();
 
@@ -10,7 +10,9 @@ router.get("/books/browse/by-genre", async (req, res) => {
         const genre = req.query.genre;
 
         if (!genre) {
-            res.status(400).json({ error: "Genre parameter is missing in the request." });
+            res.status(400).json({
+                error: "Genre parameter is missing in the request.",
+            });
             return;
         }
 
@@ -18,7 +20,9 @@ router.get("/books/browse/by-genre", async (req, res) => {
         res.status(200).json(books);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Internal server error. Please try again later." });
+        res.status(500).json({
+            error: "Internal server error. Please try again later.",
+        });
     }
 });
 

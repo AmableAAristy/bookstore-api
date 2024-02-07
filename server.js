@@ -1,11 +1,11 @@
 import express from "express";
 import browsingRoutes from "./routes/bookBrowsing.js";
-import { connectMongoDB } from "./database.js";
+import { connectToDatabase } from "./db.js";
 
 const app = express();
 app.use(express.json());
 
-connectMongoDB();
+connectToDatabase();
 
 app.use(browsingRoutes);
 
