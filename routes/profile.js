@@ -9,14 +9,22 @@ const router = express.Router();
 router.use(express.json())
 
 //Create a User with username, password and optional fields (name, email address, home address) 
-router.post('/users', async (req, res) => { 
+router.post('/users', async (req, res) => {
     const { username, password, realName, email, address } = req.body;
     if (!username || !password) {
         return res.status(400).json({
             error: "Username and password are required!"
         });
     }
+    //unique username only
     try {
+        const uniqueUsername = await db.collection('users').findOne({ username: username })
+        if (uniqueUsername) {
+            return res.status(400).json({
+                error: "Unique username already taken"
+            })
+        }
+
         const newUser = { username, password };
         if (realName) newUser.realName = realName;
         if (email) newUser.email = email;
