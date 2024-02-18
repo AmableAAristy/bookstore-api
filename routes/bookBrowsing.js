@@ -16,7 +16,13 @@ router.get("/books/browse/by-genre", async (req, res) => {
             return;
         }
 
-        const books = await db.collection("books").find({ genre }).toArray();
+        const regex = new RegExp(genre, "i");
+
+        const books = await db
+            .collection("books")
+            .find({ genre: regex })
+            .toArray();
+
         res.status(200).json(books);
     } catch (error) {
         console.error(error);
