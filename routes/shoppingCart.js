@@ -1,6 +1,6 @@
 // Author: Brandon Armstrong
 import express from "express";
-import { db } from "../database.js";
+import { db } from "../db.js";
 
 const router = express.Router();
 
