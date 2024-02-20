@@ -1,8 +1,10 @@
 import express from "express";
-import browsingRoutes from "./routes/bookBrowsing.js";
 import { connectToDatabase } from "./db.js";
+import browsingRoutes from "./routes/bookBrowsing.js";// Javier
 import profileManagement from "./routes/profile.js"; //Amable
-import bookratings from "./routes/bookRating.js" //Maxwell
+import shoppingCartRoutes from "./routes/shoppingCart.js"; // Brandon
+import bookratings from "./routes/bookRating.js"; //Maxwell
+
 
 const app = express();
 app.use(express.json());
@@ -15,4 +17,5 @@ connectToDatabase().then(() => {
 
 app.use(browsingRoutes);
 app.use(profileManagement);
-app.use(bookratings)
+app.use(shoppingCartRoutes);
+app.use(bookratings);
