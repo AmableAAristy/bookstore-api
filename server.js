@@ -4,7 +4,7 @@ import browsingRoutes from "./routes/bookBrowsing.js";// Javier
 import profileManagement from "./routes/profile.js"; //Amable
 import shoppingCartRoutes from "./routes/shoppingCart.js"; // Brandon
 import bookratings from "./routes/bookRating.js"; //Maxwell
-
+import wishList from "./routes/wishList.js";
 
 const app = express();
 app.use(express.json());
@@ -19,3 +19,4 @@ app.use(browsingRoutes);
 app.use(profileManagement);
 app.use(shoppingCartRoutes);
 app.use(bookratings);
+app.use(wishList);
