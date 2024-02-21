@@ -20,3 +20,8 @@ app.use(profileManagement);
 app.use(shoppingCartRoutes);
 app.use(bookratings);
 app.use(wishList);
+
+
+app.use((req, res) => {
+    res.status(404).send("Sorry, we couldn't find that! Check your route!");
+  });

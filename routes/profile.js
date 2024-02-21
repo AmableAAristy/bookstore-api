@@ -45,7 +45,22 @@ router.post('/users', async (req, res) => {
 )
 
 //Retrieve a User Object and its fields by their username
+router.get('/users', async (req, res) => {
+    const username = req.query.username;
 
+    try {
+        const foundUser = await db.collection('users').findOne({ username: username })
+        if (foundUser) {
+            res.status(200).json(foundUser)
+        }
+        else {
+            res.status(404).json({ error: 'Username does not exist' })
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server could not locate usernames.' })
+    }
+})
 //Update the user and any of their fields except for mail 
 
 // Create Credit Card that belongs to a User  
