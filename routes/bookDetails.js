@@ -1,115 +1,141 @@
 // Author: Tarah Andre
-import express from "express";
-const router = express.Router();
-
-//a constant variable for books (my imaginary book[s])
-const books = [{
-    ISBN: 955232644930, 
-    name: 'The New Technology: Concept', 
-    description: 'In this book Diana Simpson describes the concept of new technology. She first starts by giving a detailed description or definition of technology, then she describes how to build a better future with new technologies. ', 
-    price: 30.00, 
-    author: 'Diana Simpson', 
-    genre: ['technology', 'computer science'], 
-    publisher: 'New Tech Inc.', 
-    yearPublished: 2024, 
-    copiesSold: 200
-}];
+const express = require('express');
+const router = express();
+router.use(express.json());
+const mongoose = require('mongoose');
+require('dotenv').config();
+const mongoString = process.env.DATABASE_URL;
+mongoose.connect(mongoString);
+const datab = mongoose.connection;
 
 //creating routes
-//adding a book's info to the system
-async function postBooks() {
-    let myBooks = new Promise(function(resolve) {
-        let req = new XMLHttpRequest();
-        req.open('POST', "books");
+const routes = require('./routes/routes');
 
-        req.onload = function() {
-            if (req.status == 200) {
-                resolve(req.response);
-            } else {
-                resolve("Book(s) not found");
-            }
-        };
+router.use('/api', routes);
+module.exports = router;
 
-        req.send();
-    });
+//datab.on to connect to database
+//throws error if failed connection
+datab.on('error', (error) => {
+    console.log(error);
+})
 
-    document.getElementById("demo").innerHTML = await myBooks;
-}
+//datab.once to run once
+//shows a message if connecetion is successful
+datab.once('connected', () => {
+    console.log('Database connected');
+})
 
-postBooks();
+//a schema for my database
+const booksInfoSchema = new mongoose.Schema({
+    ISBN: {
+        required: true,
+        type: Number
+    },
+    name: {
+        required: true,
+        type: String
+    }, 
+    description: {
+        required: true,
+        type: String
+    }, 
+    price: {
+        required: true,
+        type: Number
+    }, 
+    author: {
+        required: true,
+        type: String
+    }, 
+    genre: {
+        required: true,
+        type: String
+    }, 
+    publisher: {
+        required: true,
+        type: String
+    }, 
+    yearPublished: {
+        required: true,
+        type: Number
+    }, 
+    copiesSold: {
+        required: true,
+        type: String
+    }
+})
 
-//Retrieve book's info
-async function getBooks() {
-    let myBooks = new Promise(function(resolve) {
-        let req = new XMLHttpRequest();
-        req.open('GET', "books");
+module.exports = mongoose.bookDetails('Data', booksInfoSchema);
+const aBookDetails = require('../bookDetailss/bookDetails');
 
-        req.onload = function() {
-            if (req.status == 200) {
-                resolve(req.response);
-            } else {
-                resolve("Book(s) not found");
-            }
-        };
+//post to database with callback for response and request
+router.post('/post', async (req, res) => {
+    const info = new BookDetails({
+    ISBN: req.body.ISBN, 
+    name: req.body.name, 
+    description: req.body.description, 
+    price: req.body.price, 
+    author: req.body.author, 
+    genre: req.body.genre, 
+    publisher: req.body.publisher, 
+    yearPublished: req.body.yearPublished, 
+    copiesSold: req.body.copiesSold
+    })
 
-        req.send();
-    });
+    try {
+        const infoSaved = await info.save();
+        res.status(200).json(infoSaved);
+    }
+    catch (error) {
+        res.status(400).json({message: error.message});
+    }
+})
 
-    document.getElementById("demo").innerHTML = await myBooks;
-}
+//get data from database with callback for response and request
+router.get('/getAll', async (req, res) => {
+    try {
+        const info = await aBookDetails.find();
+        res.json(info);
+    }
+    catch (error) {
+        res.status(500).json({message: error.message});
+    }
+})
 
-getBooks();
+//get data based on ID with callback for response and request
+router.get('/getOne/:id', async (req,res) => {
+    try {
+        const info = await aBookDetails.findById(req.params.id);
+        res.json(info);
+    }
+    catch (error) {
+        res.status(500).json({message: error.message});
+    }
+})
 
-//Retrieving a book by its ISBN
-router.get('/books/:ISBN', async(req, res) => {
-    const {ISBN} = req.params;
-    const book = await books.filter((ISBN) => book.ISBN === ISBN)[0];
-    res.json({ok: true, books});
-});
+//get data based on author with callback for response and request
+router.get('/getOne/:author', async (req, res) => {
+    try {
+        const info = await aBookDetails.findByAuthor(req.params.author);
+        res.json(info);
+    }
+    catch (error) {
+        res.status(500).json({message: error.message});
+    }
+})
 
-//adding author with biography (my imaginary book)
-const addingAnAuthorWithBiography = [{
-    author: 'Lea Panthers', 
-    biography: 'Lea is an author who had written many books. Her books have sold over 200 million copies. She currently lives in Florida and is happy to be a writer.',
-    publisher: 'Not Anonymous Writer, Inc.'
-}];
-
-
-async function posBooksWithBiography() {
-    let myBooks = new Promise(function(resolve) {
-        let req = new XMLHttpRequest();
-
-        req.open('POST', "addingAnAuthorWithBiography");
-
-        req.onload = function() {
-            if (req.status == 200) {
-                resolve(req.response);
-            } else {
-                resolve("Book(s) not found");
-            }
-        };
-
-        req.send();
-    });
-
-    document.getElementById("demo").innerHTML = await myBooks;
-}
-
-posBooksWithBiography();
-
- router.get('/', (_, res) => {
-   res.send('A Get Call message - Tarah Andre');
- });
+ router.listen(3000, () => {
+   console.log(`A Get Call message - Tarah Andre at ${3000}`);
+ })
 
  export default  router;
 
 
 //Citations:
-//1. A team member helped me create the branch named book-details.
-//2. Ninja, N. (2022, April 14). Complete MongoDB Tutorial. YouTube. https://www.youtube.com/playlist?list=PL4cUxeGkcC9h77dJ-QJlwGlZlTd4ecZOA
-//3. 7. Onejohi. (2018, June 28). Building a simple rest API with nodejs and express. Medium.https://medium.com/@onejohi/building-a-simple-rest-api-with-nodejs-and-express-da6273ed7ca9
-//4. A team member helped me so that I could make an additional installation for this repository.
-//5. Many team members helped me with my homework.
-//6. lennyvita. (2023). I dont understand the basics of async, await and using JSON data to extract the info and apply it. reddit. https://www.reddit.com/r/node/comments/xv1dlm/i_dont_understand_the_basics_of_async_await_and/
-//7. Fireship. (n.d.). The Async Await Episode I Promised. YouTube. https://youtu.be/vn3tm0quoqE?si=4y_ic4VJZsDrWvR2 
-//8. A Tutor from STARS Tutoring helped me.
+//1. Ninja, N. (2022, April 14). Complete MongoDB Tutorial. YouTube. https://www.youtube.com/playlist?list=PL4cUxeGkcC9h77dJ-QJlwGlZlTd4ecZOA
+//2. Onejohi. (2018, June 28). Building a simple rest API with nodejs and express. Medium.https://medium.com/@onejohi/building-a-simple-rest-api-with-nodejs-and-express-da6273ed7ca9
+//3. lennyvita. (2023). I dont understand the basics of async, await and using JSON data to extract the info and apply it. reddit. https://www.reddit.com/r/node/comments/xv1dlm/i_dont_understand_the_basics_of_async_await_and/
+//4. Fireship. (n.d.). The Async Await Episode I Promised. YouTube. https://youtu.be/vn3tm0quoqE?si=4y_ic4VJZsDrWvR2 
+//5. A Tutor from STARS Tutoring helped me.
+//6. Kumar, Nishant. “How to Build a RESTful API Using Node, Express, and MongoDB.” freeCodeCamp.Org, freeCodeCamp.org, 21 Feb. 2022, https://www.freecodecamp.org/news/build-a-restful-api-using-node-express-and-mongodb/
