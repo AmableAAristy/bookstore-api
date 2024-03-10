@@ -33,7 +33,23 @@ router.get("/books/browse/by-genre", async (req, res) => {
 });
 
 // Retrieve List of Top Sellers (http://localhost:3000/books/browse/top-sellers)
-router.get("/books/browse/top-sellers", (req, res) => {});
+router.get("/books/browse/top-sellers", async (req, res) => {
+    try {
+        const books = await db
+            .collection("books")
+            .find()
+            .sort({ copiesSold: -1 })
+            .limit(10)
+            .toArray();
+
+        res.status(200).json(books);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            error: "Internal server error. Please try again later.",
+        });
+    }
+});
 
 // Retrieve List of Books for a particular rating and higher (http://localhost:3000/books/browse/by-rating?rating=5)
 router.get("/books/browse/by-rating", (req, res) => {

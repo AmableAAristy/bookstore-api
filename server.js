@@ -1,6 +1,6 @@
 import express from "express";
 import { connectToDatabase } from "./db.js";
-import browsingRoutes from "./routes/bookBrowsing.js";// Javier
+import browsingRoutes from "./routes/bookBrowsing.js"; // Javier
 import profileManagement from "./routes/profile.js"; //Amable
 import shoppingCartRoutes from "./routes/shoppingCart.js"; // Brandon
 import bookratings from "./routes/bookRating.js"; //Maxwell
@@ -21,7 +21,6 @@ app.use(shoppingCartRoutes);
 app.use(bookratings);
 app.use(wishList);
 
-
 app.use((req, res) => {
     res.status(404).send("Sorry, we couldn't find that! Check your route!");
-  });
+});
