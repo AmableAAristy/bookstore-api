@@ -32,6 +32,25 @@ router.post("/cart/add", async (req, res) => {
 //************************************* */
 //Delete a book from the shopping cart instance for that user
 //************************************* */
+router.delete("/cart/delete", async (req, res) => {
+    try {
+        const { bookId, userId } = req.body;
+
+        if (!bookId || !userId) {
+            res.status(400).json({ error: "Book Id or User Id is missing in the request." });
+            return;
+        }
+
+        // Implement logic to delete the book from the user's cart
+        // Update the user's cart in the database
+        await db.collection("carts").updateOne({ userId }, { $pull: { books: bookId } });
+
+        res.status(200).json({ message: "Book removed from the cart successfully." });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error. Please try again later." });
+    }
+});
 //************************************* */
 //Helper function to calculate subtotal
 //************************************* */
