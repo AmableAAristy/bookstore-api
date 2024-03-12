@@ -25,15 +25,15 @@ export { connectToDatabase, db };
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //*************************************------------------ MOCK DATABASE -------------------************************************** */
-/*import { MongoClient } from 'mongodb';
+// import { MongoClient } from 'mongodb';
 
-const connectToDatabase = async () => {
-  const client = await MongoClient.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  return client.db();
-};
+// const connectToDatabase = async () => {
+//   const client = await MongoClient.connect(process.env.MONGODB_URI, {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+//   });
+//   return client.db();
+// };
 
-export { connectToDatabase };
+// export { connectToDatabase };
 //*************************************------------------MOCK DATABASE-------------------************************************** */
