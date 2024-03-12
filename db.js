@@ -1,21 +1,21 @@
 
-import { MongoClient } from "mongodb";
-import dotenv from "dotenv";
+// import { MongoClient } from "mongodb";
+// import dotenv from "dotenv";
 
-dotenv.config();
+// dotenv.config();
 
-let db;
+// let db;
 
-const connectToDatabase = async () => {
-    try {
-        const client = await MongoClient.connect(process.env.MONGODB_URI);
-        db = client.db();
-    } catch (error) {
-        console.error(error);
-    }
-};
+// const connectToDatabase = async () => {
+//     try {
+//         const client = await MongoClient.connect(process.env.MONGODB_URI);
+//         db = client.db();
+//     } catch (error) {
+//         console.error(error);
+//     }
+// };
 
-export { connectToDatabase, db };
+// export { connectToDatabase, db };
 //*************************************------------------^^  ACTUAL DATABASE ^^-------------------**************************************
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -25,7 +25,7 @@ export { connectToDatabase, db };
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //*************************************------------------ MOCK DATABASE -------------------************************************** */
-/*import { MongoClient } from 'mongodb';
+import { MongoClient } from 'mongodb';
 
 const connectToDatabase = async () => {
   const client = await MongoClient.connect(process.env.MONGODB_URI, {
