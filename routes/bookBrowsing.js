@@ -52,8 +52,36 @@ router.get("/books/browse/top-sellers", async (req, res) => {
 });
 
 // Retrieve List of Books for a particular rating and higher (http://localhost:3000/books/browse/by-rating?rating=5)
-router.get("/books/browse/by-rating", (req, res) => {
-    const rating = req.query.rating;
+router.get("/books/browse/by-rating", async (req, res) => {
+    try {
+        const rating = req.query.rating;
+
+        if (!rating) {
+            res.status(400).json({
+                error: "Rating parameter is missing in the request.",
+            });
+            return;
+        }
+
+        const ratings = await db
+            .collection("ratings")
+            .find({ rating: { $gte: Number.parseInt(rating, 10) } })
+            .toArray();
+
+        const bookIds = ratings.map(rating => rating.bookId);
+
+        const books = await db
+            .collection("books")
+            .find({ _id: { $in: bookIds } })
+            .toArray();
+
+        res.status(200).json(books);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            error: "Internal server error. Please try again later.",
+        });
+    }
 });
 
 // Discount books by publisher (http://localhost:3000/books/discount-by-publisher)
