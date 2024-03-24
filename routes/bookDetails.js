@@ -1,8 +1,10 @@
 // Author: Tarah Andre
-const express = require('express');
+//const express = require('express');
+import express from 'express';
 const router = express();
 router.use(express.json());
-const mongoose = require('mongoose');
+//const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 require('dotenv').config();
 const mongoString = process.env.DATABASE_URL;
 mongoose.connect(mongoString);
@@ -117,7 +119,7 @@ router.get('/getOne/:id', async (req,res) => {
 //get data based on author with callback for response and request
 router.get('/getOne/:author', async (req, res) => {
     try {
-        const info = await aBookDetails.findByAuthor(req.params.author);
+        const info = await aBookDetails.find(req.params.author);
         res.json(info);
     }
     catch (error) {
@@ -139,3 +141,5 @@ router.get('/getOne/:author', async (req, res) => {
 //4. Fireship. (n.d.). The Async Await Episode I Promised. YouTube. https://youtu.be/vn3tm0quoqE?si=4y_ic4VJZsDrWvR2 
 //5. A Tutor from STARS Tutoring helped me.
 //6. Kumar, Nishant. “How to Build a RESTful API Using Node, Express, and MongoDB.” freeCodeCamp.Org, freeCodeCamp.org, 21 Feb. 2022, https://www.freecodecamp.org/news/build-a-restful-api-using-node-express-and-mongodb/
+//7. Array.prototype.find() . MDN Web Docs. (n.d.). https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
+//8.Silva, M. H. da. (n.d.). Building a Node.js/TypeScript REST API, Part 1: Express.js. Toptal Engineering Blog. https://www.toptal.com/express-js/nodejs-typescript-rest-api-pt-1 
