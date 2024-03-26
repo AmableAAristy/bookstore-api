@@ -63,4 +63,33 @@ router.delete("/wishlist/remove", async (req, res) => {
     }
 });
 
+// Viewing a book in the wishlist
+router.get(" /wishlist/view", async (req, res) => {
+  try {
+    const { username } = req.query;
+
+    if (!username) {
+      res.status(400).json({
+        error: "Username is missing in the request.",
+      });
+      return;
+    }
+
+    // Viewing the book from the user's wishlist
+    const wishlist = await db.collection("wishlists").findOne({ username });
+
+    if (!wishlist) {
+      res.status(404).json({
+        error: "Wishlist not found for username",
+      });
+      return;
+    }
+
+    res.status(200).json(booksInWishList);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error message. Try again." });
+  }
+});
+
 export default router;
