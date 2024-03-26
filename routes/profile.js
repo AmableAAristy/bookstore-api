@@ -65,7 +65,7 @@ router.get("/users", async (req, res) => {
 
 router.patch("/users/:username", async (req, res) => {
   const { username } = req.params;
-  const { password, realName, email, address, credit } = req.body;
+  const { password, realName, email, address } = req.body;
 
   if (address !== undefined) {
     res.status(400).json({ error: "You cannot update the address." });
@@ -75,7 +75,6 @@ router.patch("/users/:username", async (req, res) => {
     if (password !== undefined) updateInformation.password = password;
     if (realName !== undefined) updateInformation.realName = realName;
     if (email !== undefined) updateInformation.email = email;
-    if (credit !== undefined) updateInformation.credit = credit;
 
     const result = await db
       .collection("users")
@@ -91,6 +90,30 @@ router.patch("/users/:username", async (req, res) => {
 });
 
 // Create Credit Card that belongs to a User
+router.post("/users/:username", async (req, res) => {
+  const username = req.params.username;
+  const { billingAddress, cardNumber, expiration, ccv } = req.body;
+
+  try {
+    const user = await db.collection("users").findOne({ username: username });
+    if (!user) {
+      res.status(400).json({ error: "User not found." });
+    }
+    user.creditCard = {
+      billingAddress: billingAddress,
+      cardNumber: cardNumber,
+      expiration: expiration,
+      ccv: ccv,
+    };
+    const result = await db
+      .collection("users")
+      .updateOne({ username: username }, { $set: user.creditCard });
+
+    res.status(200).json({ result });
+  } catch (err) {
+    res.status(500).json({ error: "A server error occured." });
+  }
+});
 
 router.get("/", (_, res) => {
   res.send(
