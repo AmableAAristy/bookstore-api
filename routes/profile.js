@@ -94,6 +94,13 @@ router.post("/users/:username", async (req, res) => {
   const username = req.params.username;
   const { billingAddress, cardNumber, expiration, ccv } = req.body;
 
+  if (!/^\d+$/.test(cvv) || cvv.length < 3 || cvv.length > 4) {
+    res
+      .status(400)
+      .json({ error: "CVV most be digits only of length 3 or 4." });
+  }
+
+  
   try {
     const user = await db.collection("users").findOne({ username: username });
     if (!user) {
