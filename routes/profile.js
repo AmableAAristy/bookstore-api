@@ -1,12 +1,12 @@
 // Author: Amable Aristy
-
+import { ObjectId } from 'mongodb';
 import express from "express";
 import { db } from "../db.js";
 
 const router = express.Router();
 router.use(express.json());
 
-//Create a User with username, password and optional fields (name, email address, home address)
+//Create a User with username, password, and optional fields (name, email address, home address, cartId)
 router.post("/users", async (req, res) => {
   const { username, password, realName, email, address } = req.body;
   if (!username || !password) {
@@ -14,7 +14,7 @@ router.post("/users", async (req, res) => {
       error: "Username and password are required!",
     });
   }
-  //unique username only
+
   try {
     const uniqueUsername = await db
       .collection("users")
@@ -25,12 +25,20 @@ router.post("/users", async (req, res) => {
       });
     }
 
-    const newUser = { username, password };
+    // Generate a unique cartId
+    const cartId = `cart_${new ObjectId().toString()}`;
+
+    const newUser = { username, password, cartId };
     if (realName) newUser.realName = realName;
     if (email) newUser.email = email;
     if (address) newUser.address = address;
 
     const result = await db.collection("users").insertOne(newUser);
+    if (!result || !result.insertedId) {
+      console.error("Insertion failed:", result);
+      return res.status(500).json({ error: "Could not create a new user. Insertion failed." });
+    }
+
     const insertedId = result.insertedId;
     const response = {
       message: "User created successfully",
@@ -38,10 +46,11 @@ router.post("/users", async (req, res) => {
     };
     res.status(201).json(response);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Could not create a new user" });
+    console.error("Error creating user:", err);
+    res.status(500).json({ error: "Could not create a new user. Internal server error." });
   }
 });
+
 
 //Retrieve a User Object and its fields by their username
 router.get("/users", async (req, res) => {
