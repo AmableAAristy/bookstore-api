@@ -104,4 +104,38 @@ router.get(" /wishlist/view", async (req, res) => {
   }
 });
 
+// Archive a wishlist
+router.patch("/wishlist/archive", async (req, res) => {
+  try {
+    const { username } = req.body;
+
+    // Check username
+    if (!username) {
+      res.status(400).json({
+        error: "Username is missing in the request.",
+      });
+      return;
+    }
+
+    // if wishlist exists
+    const wishlist = await db.collection("wishlists").findOne({ username });
+
+    if (!wishlist) {
+      res.status(404).json({ error: "Wishlist not found for username." });
+      return;
+    }
+
+    // Update the wishlist to mark it as archived
+    await db.collection("wishlists").updateOne(
+      { username },
+      { $set: { archived: true } }
+    );
+
+    res.status(200).json({ message: "Wishlist has been archived." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "An error occurred while trying to archive the wishlist." });
+  }
+});
+
 export default router;
