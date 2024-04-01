@@ -61,6 +61,8 @@ router.get("/users", async (req, res) => {
     res.status(500).json({ error: "Server could not locate usernames." });
   }
 });
+
+
 //Update the user and any of their fields except for mail
 
 router.patch("/users/:username", async (req, res) => {
@@ -92,12 +94,10 @@ router.patch("/users/:username", async (req, res) => {
 // Create Credit Card that belongs to a User
 router.post("/users/:username", async (req, res) => {
   const username = req.params.username;
-  const { billingAddress, cardNumber, expiration, ccv } = req.body;
+  const { billingAddress, cardNumber, expiration, cvv } = req.body;
 
   if (!/^\d+$/.test(cvv) || cvv.length < 3 || cvv.length > 4) {
-    res
-      .status(400)
-      .json({ error: "CVV most be digits only of length 3 or 4." });
+    return res.status(400).json({ error: "CVV most be digits only of length 3 or 4." });
   }
 
   
@@ -110,7 +110,7 @@ router.post("/users/:username", async (req, res) => {
       billingAddress: billingAddress,
       cardNumber: cardNumber,
       expiration: expiration,
-      ccv: ccv,
+      cvv: cvv,
     };
     const result = await db
       .collection("users")
@@ -122,10 +122,5 @@ router.post("/users/:username", async (req, res) => {
   }
 });
 
-router.get("/", (_, res) => {
-  res.send(
-    "I just want something to show. I am in profile js you can delete me if you want"
-  );
-});
 
 export default router;
