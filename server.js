@@ -21,6 +21,12 @@ app.use(shoppingCartRoutes);
 app.use(bookratings);
 app.use(wishList);
 
+app.get("/", (_, res) => {
+    res.send(
+      "Welcome to the Library!"
+    );
+  });
+  
 app.use((req, res) => {
     res.status(404).send("Sorry, we couldn't find that! Check your route!");
 });
