@@ -122,10 +122,5 @@ router.post("/users/:username", async (req, res) => {
   }
 });
 
-router.get("/", (_, res) => {
-  res.send(
-    "I just want something to show. I am in profile js you can delete me if you want"
-  );
-});
 
 export default router;
