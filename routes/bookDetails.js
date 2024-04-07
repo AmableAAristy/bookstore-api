@@ -5,13 +5,15 @@ const router = express();
 router.use(express.json());
 //const mongoose = require('mongoose');
 import mongoose from 'mongoose';
-require('dotenv').config();
+import dotenv from 'dotenv';
+import routes from './routes/routes';
 const mongoString = process.env.DATABASE_URL;
 mongoose.connect(mongoString);
 const datab = mongoose.connection;
 
 //creating routes
-const routes = require('./routes/routes');
+//const routes = require('./routes/routes');
+
 
 router.use('/api', routes);
 module.exports = router;
