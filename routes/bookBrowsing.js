@@ -85,8 +85,50 @@ router.get("/books/browse/by-rating", async (req, res) => {
 });
 
 // Discount books by publisher (http://localhost:3000/books/discount-by-publisher)
-router.patch("/books", (req, res) => {
-    const { publisher, discountPercent } = req.body;
+router.patch("/books/discount", async (req, res) => {
+    try {
+        const { publisher, discountPercent } = req.body;
+
+        if (!publisher || !discountPercent) {
+            res.status(400).json({
+                error: "Publisher and discount percent fields missing in request body.",
+            });
+            return;
+        }
+
+        const booksToUpdate = await db
+            .collection("books")
+            .find({ publisher })
+            .toArray();
+
+        const updatedBooks = booksToUpdate.map(book => {
+            const discountedPrice = parseFloat(
+                (book.price * (1 - discountPercent / 100)).toFixed(2)
+            );
+            return {
+                ...book,
+                price: discountedPrice,
+            };
+        });
+
+        await Promise.all(
+            updatedBooks.map(book =>
+                db
+                    .collection("books")
+                    .updateOne(
+                        { _id: book._id },
+                        { $set: { price: book.price } }
+                    )
+            )
+        );
+
+        res.status(200).json({ message: "Books discounted successfully." });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            error: "Internal server error. Please try again later.",
+        });
+    }
 });
 
 export default router;
