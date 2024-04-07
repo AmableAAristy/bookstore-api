@@ -1,6 +1,7 @@
 // Author: Maxwell Adelakun
 import express from "express";
 import { db } from "../db.js";
+import { ObjectId } from "mongodb";
 
 const router = express.Router();
 router.use(express.json());
@@ -10,7 +11,10 @@ router.get("/books/comments/:bookId", async (req, res) => {
     try {
         const { bookId } = req.params;
 
-        const comments = await db.collection("comments").find({ bookId }).toArray();
+        const comments = await db
+            .collection("comments")
+            .find({ bookId })
+            .toArray();
 
         res.status(200).json(comments);
     } catch (error) {
@@ -26,7 +30,10 @@ router.get("/books/average-rating/:bookId", async (req, res) => {
     try {
         const { bookId } = req.params;
 
-        const ratings = await db.collection("ratings").find({ bookId }).toArray();
+        const ratings = await db
+            .collection("ratings")
+            .find({ bookId })
+            .toArray();
 
         if (ratings.length === 0) {
             res.status(404).json({
@@ -52,14 +59,18 @@ router.post("/books/ratings", async (req, res) => {
     try {
         const { rating, userId, bookId } = req.body;
 
-        if ((!rating || !userId || !bookId)) {
+        if ((!rating || !userId, !bookId)) {
             res.status(400).json({
                 error: "Rating, UserId, and BookId are missing in the request.",
             });
             return;
         }
 
-        db.collection("ratings").insertOne({ rating, userId, bookId });
+        db.collection("ratings").insertOne({
+            rating,
+            userId: new ObjectId(userId),
+            bookId: new ObjectId(bookId),
+        });
 
         res.status(200).json({ message: "Rating successfully added to book." });
     } catch (error) {
@@ -75,7 +86,7 @@ router.post("/books/comment", async (req, res) => {
     try {
         const { comment, userId, bookId } = req.body;
 
-        if ((!comment || !userId || !bookId)) {
+        if (!comment || !userId || !bookId) {
             res.status(400).json({
                 error: "Comment, UserId, and BookId are missing in the request.",
             });
@@ -84,7 +95,9 @@ router.post("/books/comment", async (req, res) => {
 
         db.collection("comments").insertOne({ comment, userId, bookId });
 
-        res.status(200).json({ message: "Comment successfully added to book." });
+        res.status(200).json({
+            message: "Comment successfully added to book.",
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({
