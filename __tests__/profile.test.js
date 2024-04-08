@@ -7,6 +7,24 @@ const app = express();
 app.use(express.json());
 app.use('/api', router);
 
+// Mock the db module outside the test block
+jest.mock('../db', () => {
+  const originalModule = jest.requireActual('../db');
+  return {
+    ...originalModule,
+    connectToDatabase: jest.fn(),
+    db: {
+      collection: jest.fn(),
+    },
+  };
+});
+
+// Mock the database connection
+beforeAll(async () => {
+  db.collection.mockImplementation(jest.fn());
+  connectToDatabase.mockResolvedValue(db);
+});
+
 describe('POST /users', () => {
     it('should create a new user and return 201 status', async () => {
       const newUser = {

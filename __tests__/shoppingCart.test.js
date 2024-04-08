@@ -1,4 +1,4 @@
-//Author: Brandon Armstrong
+// Author: Brandon Armstrong
 import request from 'supertest';
 import express from 'express';
 import router from '../routes/shoppingCart';
@@ -8,126 +8,172 @@ const app = express();
 app.use(express.json());
 app.use('/api', router);
 
-// Mock the db module outside the test block
+// Mock the database connection
 jest.mock('../db', () => {
   const originalModule = jest.requireActual('../db');
   return {
     ...originalModule,
     connectToDatabase: jest.fn(),
     db: {
-      collection: jest.fn(),
+      collection: jest.fn().mockReturnValue({
+        findOne: jest.fn(),
+        updateOne: jest.fn(),
+        insertOne: jest.fn(),
+        deleteOne: jest.fn(),
+      }),
     },
   };
 });
-//*********************************** */ Mock the database connection ******************************//
+
+// Mock the database connection before all tests
 beforeAll(async () => {
-  
-  db.collection.mockImplementation(jest.fn());
-  connectToDatabase.mockResolvedValue(db); // Mock the connectToDatabase to return the db object
+  await connectToDatabase(); // Mock database connection
 });
-//******************** */Testing the post method for adding books to shopping cart***************//
-describe('POST /api/cart/add', () => {
+
+// Testing the post method for adding books to shopping cart
+describe('POST /api/carts', () => {
   beforeEach(() => {
-    // Reset the mock implementation before each test
-    db.collection.mockReset();
+    db.collection().findOne.mockReset();
+    db.collection().updateOne.mockReset();
+    db.collection().insertOne.mockReset();
   });
 
   it('should add a book to the cart successfully', async () => {
-    // Mock the behavior of db.collection
-    db.collection.mockReturnValueOnce({
-      updateOne: jest.fn().mockResolvedValue({}),
-    });
+    db.collection().findOne.mockResolvedValueOnce(null); // Simulating that the cart does not exist
+    db.collection().insertOne.mockResolvedValueOnce({}); // Mock insert operation
 
     const response = await request(app)
-      .post('/api/cart/add')
-      .send({ bookId: 'validBookId', userId: 'validUserId' });
+      .post('/api/carts')
+      .send({ bookISBN: 'validBookISBN', userId: 'validUserId', bookName: 'BookName', bookAuthor: 'BookAuthor', bookPrice: '10.99' });
+
+    expect(response.status).toBe(200);
+    expect(response.body.message).toBe('Cart created successfully, book added!');
+  });
+
+  it('should handle missing fields in the request', async () => {
+    const response = await request(app)
+      .post('/api/carts')
+      .send({ userId: 'validUserId', bookName: 'BookName', bookAuthor: 'BookAuthor', bookPrice: '10.99' });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Book ISBN, User Id, or Book Price is missing in the request.');
+  });
+
+  // Testing adding a book to an existing cart
+  it('should add a book to an existing cart successfully', async () => {
+    const existingCart = {
+      userId: 'validUserId',
+      books: [{ bookISBN: 'existingBookISBN', bookPrice: '5.99' }],
+      subtotal: 5.99
+    };
+
+    db.collection().findOne.mockResolvedValueOnce(existingCart);
+    db.collection().updateOne.mockResolvedValueOnce({ modifiedCount: 1 });
+
+    const response = await request(app)
+      .post('/api/carts')
+      .send({ bookISBN: 'validBookISBN', userId: 'validUserId', bookName: 'BookName', bookAuthor: 'BookAuthor', bookPrice: '10.99' });
 
     expect(response.status).toBe(200);
     expect(response.body.message).toBe('Book added to the cart successfully.');
   });
-
-  it('should handle missing bookId or userId', async () => {
-    // Test missing bookId
-    let response = await request(app)
-      .post('/api/cart/add')
-      .send({ userId: 'validUserId' });
-
-    expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Book Id or User Id is missing in the request.');
-
-    // Test missing userId
-    response = await request(app)
-      .post('/api/cart/add')
-      .send({ bookId: 'validBookId' });
-
-    expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Book Id or User Id is missing in the request.');
-  });
-
-  it('should handle error during database update', async () => {
-    // Mock the behavior of db.collection to simulate an error during update
-    db.collection.mockReturnValueOnce({
-      updateOne: jest.fn().mockRejectedValue(new Error('Database error')),
-    });
-
-    const response = await request(app)
-      .post('/api/cart/add')
-      .send({ bookId: 'validBookId', userId: 'validUserId' });
-
-    expect(response.status).toBe(500);
-    expect(response.body.error).toBe('Internal server error. Please try again later.');
-  });
 });
-//******************** */Testing the delete method for adding books to shopping cart***************//
-describe('DELETE /api/cart/delete', () => {
+
+// Testing the delete method for removing books from shopping cart
+describe('DELETE /api/carts', () => {
   beforeEach(() => {
-    // Reset the mock implementation before each test
-    db.collection.mockReset();
+    db.collection().findOne.mockReset();
+    db.collection().updateOne.mockReset();
+    db.collection().deleteOne.mockReset();
   });
 
   it('should remove a book from the cart successfully', async () => {
-    // Mock the behavior of db.collection for the delete operation
-    db.collection.mockReturnValueOnce({
-      updateOne: jest.fn().mockResolvedValue({}),
-    });
+    db.collection().findOne
+      .mockResolvedValueOnce({ books: [{ bookISBN: 'validBookISBN', bookPrice: '10.99' }, { bookISBN: 'otherBookISBN', bookPrice: '5.99' }] })
+      .mockResolvedValueOnce({ books: [{ bookISBN: 'otherBookISBN', bookPrice: '5.99' }], subtotal: 5.99 }); // Remaining book after deletion
+
+    db.collection().updateOne.mockResolvedValueOnce({ modifiedCount: 1 });
 
     const response = await request(app)
-      .delete('/api/cart/delete')
-      .send({ bookId: 'validBookId', userId: 'validUserId' });
+      .delete('/api/carts')
+      .send({ bookISBN: 'validBookISBN', userId: 'validUserId' });
 
     expect(response.status).toBe(200);
     expect(response.body.message).toBe('Book removed from the cart successfully.');
   });
 
-  it('should handle missing bookId or userId during delete', async () => {
-    // Test missing bookId
-    let response = await request(app)
-      .delete('/api/cart/delete')
-      .send({ userId: 'validUserId' });
+  it('should handle cart deletion if all books are removed', async () => {
+    db.collection().findOne
+      .mockResolvedValueOnce({ books: [{ bookISBN: 'validBookISBN', bookPrice: '10.99' }] }) // Only one book in cart
+      .mockResolvedValueOnce(null); // Cart not found after deletion
 
-    expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Book Id or User Id is missing in the request.');
-
-    // Test missing userId
-    response = await request(app)
-      .delete('/api/cart/delete')
-      .send({ bookId: 'validBookId' });
-
-    expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Book Id or User Id is missing in the request.');
-  });
-
-  it('should handle error during database delete', async () => {
-    // Mock the behavior of db.collection to simulate an error during delete
-    db.collection.mockReturnValueOnce({
-      updateOne: jest.fn().mockRejectedValue(new Error('Database error')),
-    });
+    db.collection().updateOne.mockResolvedValueOnce({ modifiedCount: 1 });
+    db.collection().deleteOne.mockResolvedValueOnce({ deletedCount: 1 });
 
     const response = await request(app)
-      .delete('/api/cart/delete')
-      .send({ bookId: 'validBookId', userId: 'validUserId' });
+      .delete('/api/carts')
+      .send({ bookISBN: 'validBookISBN', userId: 'validUserId' });
+
+    expect(response.status).toBe(200);
+    expect(response.body.message).toBe('Cart deleted successfully.');
+  });
+});
+
+// Testing the get method for retrieving the subtotal
+describe('GET /api/carts', () => {
+  beforeEach(() => {
+    db.collection().findOne.mockReset();
+  });
+
+  it('should handle missing user ID when retrieving the subtotal', async () => {
+    const response = await request(app).get('/api/carts');
+
+    expect(response.status).toBe(404); 
+    expect(response.body.error).toBe('Cart not found.'); 
+  });
+
+  it('should retrieve a subtotal of 0 for a valid user with an empty cart', async () => {
+    const userId = 'validUserId';
+    const cart = { userId: userId, subtotal: 0 }; // Mock cart with empty subtotal
+
+    db.collection().findOne.mockResolvedValueOnce(cart);
+
+    const response = await request(app)
+      .get(`/api/carts?userId=${userId}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.subtotal).toBe(0);
+  });
+
+  it('should handle retrieving the subtotal for an invalid user', async () => {
+    const invalidUserId = 'invalidUserId';
+
+    db.collection().findOne.mockResolvedValueOnce(null); // Simulate user not found
+
+    const response = await request(app)
+      .get(`/api/carts?userId=${invalidUserId}`);
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe('Cart not found.');
+  });
+
+  it('should handle missing user ID when retrieving the subtotal', async () => {
+    // the expected behavior should be 'not found' if userId is not provided.
+    const response = await request(app).get('/api/carts');
+
+    expect(response.status).toBe(404); 
+    expect(response.body.error).toBe('Cart not found.'); 
+  });
+
+  it('should handle internal server error during subtotal retrieval', async () => {
+    const userId = 'validUserId';
+
+    db.collection().findOne.mockRejectedValueOnce(new Error('Database connection error'));
+
+    const response = await request(app)
+      .get(`/api/carts?userId=${userId}`);
 
     expect(response.status).toBe(500);
-    expect(response.body.error).toBe('Internal server error. Please try again later.');
+    expect(response.body.error).toBe('Internal server error. Could not retrieve cart.'); 
   });
 });
