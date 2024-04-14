@@ -28,5 +28,5 @@ jobs:
       run: npm install
     - name: Run tests
       env:
-        MONGO_URI: mongodb://localhost:27017/bookstore #from my understanding this will connect to the image being created
+        MONGODB_URI: mongodb://localhost:27017/bookstore #from my understanding this will connect to the image being created
       run: npm test
