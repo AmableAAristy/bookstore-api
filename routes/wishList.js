@@ -6,9 +6,12 @@ const router = express.Router();
 
 // Adding a book to the wishlist
 router.post("/wishlist/add", async (req, res) => {
+  console.log("inside add endpoint");
   try {
     const { title, author, publicationYear, username } = req.body;
-
+    console.log(title, author, publicationYear, username);
+    console.log( req.body);
+    
     // error retry message if book title, author, or userID does not match
     if (!title || !author || !username) {
       res.status(400).json({
@@ -20,8 +23,9 @@ router.post("/wishlist/add", async (req, res) => {
     // Check if the wishlist exists for the user
     const wishlist = await db.collection("wishlists").findOne({ username });
 
-    if (!wishlist) {
-      // Wishlist doesn't exist, create a new one
+     if (!wishlist) {
+      console.log("inside the if");
+       // Wishlist doesn't exist, create a new one
       await db.collection("wishlists").insertOne({
         username,
         books: [{ title, author, publicationYear }],
@@ -29,6 +33,7 @@ router.post("/wishlist/add", async (req, res) => {
       res.status(200).json({ message: "New wishlist created and book added." });
     } else {
       // inserting the book into a user's wishlist
+      console.log("inside the else");
       await db
         .collection("wishlists")
         .updateOne(
@@ -76,7 +81,7 @@ router.delete("/wishlist/remove", async (req, res) => {
 });
 
 // Viewing a book in the wishlist
-router.get(" /wishlist/view", async (req, res) => {
+router.get("/wishlist/view", async (req, res) => {
   try {
     const { username } = req.query;
 
@@ -96,6 +101,9 @@ router.get(" /wishlist/view", async (req, res) => {
       });
       return;
     }
+
+    // Extracting the list of books from the wishlist object
+    const booksInWishList = wishlist.books || []; // Fallback to an empty array if no books are present
 
     res.status(200).json(booksInWishList);
   } catch (error) {
