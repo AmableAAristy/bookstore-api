@@ -1,28 +1,36 @@
+// Step 1: Imports
 import request from 'supertest';
 import express from 'express';
 import router from '../routes/profile';
 
+// Import necessary parts for mocking
+import { MongoClient } from 'mongodb';
 
+// Step 2: Mock Setup
+const mockMongoClient = {
+    db: jest.fn().mockReturnThis(),
+    collection: jest.fn().mockReturnThis(),
+    connect: jest.fn().mockResolvedValue(mockMongoClient),
+    close: jest.fn()
+};
+
+jest.mock('mongodb', () => ({
+    MongoClient: mockMongoClient
+}));
+
+// Mock any other modules as necessary
+jest.mock('../db', () => ({
+  connectToDatabase: () => mockMongoClient.connect()
+}));
+
+// Step 3: App Initialization
 const app = express();
 app.use(express.json());
 app.use('/api', router);
 
-// Mock the db module outside the test block
-jest.mock('../db', () => {
-  const originalModule = jest.requireActual('../db');
-  return {
-    ...originalModule,
-    connectToDatabase: jest.fn(),
-    db: {
-      collection: jest.fn(),
-    },
-  };
-});
-
-// Mock the database connection
+// Optional: Additional setup such as setting up the database state
 beforeAll(async () => {
-  db.collection.mockImplementation(jest.fn());
-  connectToDatabase.mockResolvedValue(db);
+  await MongoClient.connect(); // Assuming this is the mocked connect
 });
 
 describe('POST /users', () => {
