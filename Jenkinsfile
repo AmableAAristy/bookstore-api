@@ -6,11 +6,6 @@ pipeline {
         MONGODB_URI = 'mongodb://localhost:27017/bookstore'
     }
 
-    triggers {
-        // This enables manual triggering of the pipeline
-        githubPush(branch: '*/main')
-    }
-
     stages {
         stage('Checkout') {
             steps {
