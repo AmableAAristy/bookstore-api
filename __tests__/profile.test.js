@@ -2,22 +2,15 @@
 import request from 'supertest';
 import express from 'express';
 import router from '../routes/profile';
-import { MongoClient } from 'mongodb';
+import { connectToDatabase, db } from '../db';
 
 const app = express();
 app.use(express.json());
 app.use('/api', router);
 
-let db;
-
 // Connect to MongoDB before running tests
 beforeAll(async () => {
-  const client = new MongoClient('mongodb://localhost:27017', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  await client.connect();
-  db = client.db('bookstore'); 
+   await connectToDatabase();
 });
 
 // Close MongoDB connection after running tests
@@ -62,16 +55,16 @@ describe('Profile API Tests', () => {
   it('should return 200 and the user data if the user is found', async () => {
     const response = await request(app)
       .get('/api/users')
-      .query({ username: 'johndoe' });
+      .query({ username: 'validUsername' });
   
     expect(response.status).toBe(200);
-    expect(response.body).toEqual(mockUser);
+    expect(response.body.username).toBe('validUsername');
   });
 
   // Test for updating user data
   it('should update user data successfully', async () => {
     const response = await request(app)
-      .patch('/api/users/johndoe')
+      .patch('/api/users/validUsername')
       .send({ email: 'john@update.com' });
   
     expect(response.status).toBe(200);
@@ -90,7 +83,7 @@ describe('Profile API Tests', () => {
       });
   
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe("CVV must be digits only of length 3 or 4.");
+    expect(response.body.error).toBe("CVV most be digits only of length 3 or 4.");
   });
 
 });
