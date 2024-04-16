@@ -1,6 +1,5 @@
 pipeline {
-    agent 
-        any
+    agent any
 
     environment {
         NODE_VERSION = '20.10.0'
@@ -9,7 +8,7 @@ pipeline {
 
     triggers {
         // This enables manual triggering of the pipeline
-        githubPushTrigger(branch: '*/main')
+        githubPush(branch: '*/main')
     }
 
     stages {
