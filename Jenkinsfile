@@ -16,19 +16,23 @@ pipeline {
 
         stage('Setup MongoDB') {
             steps {
-                // Start MongoDB before running the tests
-                docker.run('--name mongodb -d -p 27017:27017 mongo')
+                script {
+                    // Start MongoDB before running the tests
+                    docker.run('--name mongodb -d -p 27017:27017 mongo')
+                }
             }
         }
 
         stage('Setup Node.js') {
             steps {
-                // Use Node Version Manager (nvm) to set Node.js version
-                sh '''
-                source /home/jenkins/.nvm/nvm.sh  // Adjust the path as needed for your Jenkins setup
-                nvm install $NODE_VERSION
-                nvm use $NODE_VERSION
-                '''
+                script {
+                    // Use Node Version Manager (nvm) to set Node.js version
+                    sh '''
+                    source /home/jenkins/.nvm/nvm.sh  // Adjust the path as needed for your Jenkins setup
+                    nvm install $NODE_VERSION
+                    nvm use $NODE_VERSION
+                    '''
+                }
             }
         }
 
@@ -47,9 +51,11 @@ pipeline {
 
     post {
         always {
-            // Cleanup MongoDB container
-            sh 'docker stop $(docker ps -q --filter ancestor=mongo)'
-            sh 'docker rm $(docker ps -a -q --filter ancestor=mongo)'
+            script {
+                // Cleanup MongoDB container using script block for multiple shell commands
+                sh 'docker stop $(docker ps -q --filter ancestor=mongo)'
+                sh 'docker rm $(docker ps -a -q --filter ancestor=mongo)'
+            }
         }
         success {
             echo 'Build succeeded!'
