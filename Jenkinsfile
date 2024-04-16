@@ -17,7 +17,7 @@ pipeline {
         stage('Setup MongoDB') {
             steps {
                 // Start MongoDB before running the tests
-                sh 'docker run -d -p 27017:27017 mongo'
+                docker.run('--name mongodb -d -p 27017:27017 mongo')
             }
         }
 
